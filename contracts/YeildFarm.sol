@@ -23,10 +23,11 @@ contract YieldFarm is Ownable, P2PLending, Wallet {
     mapping(address => address) public tokenPriceFeedMap;
     address[] public stakers;
     address[] public allowedTokens;
-    IERC20 public TST;
+    address public rewardTokenAddress;
+    //IERC20 public TST;
 
-    constructor(address _TSTAddress) {
-        TST = IERC20(_TSTAddress);
+    constructor(address _rewardTokenAddress) {
+        rewardTokenAddress = _rewardTokenAddress;
     }
 
     function addAllowedTokens(address _token) public onlyOwner {
@@ -76,7 +77,7 @@ contract YieldFarm is Ownable, P2PLending, Wallet {
             
             address recipient = stakers[stakersIndex];
             uint userTotalValue = getUserTotalValue(recipient);
-            TST.transfer(recipient, userTotalValue);
+            IERC20(rewardTokenAddress).transfer(recipient, userTotalValue);
             // send them a token reward based on their total value locked
 
             emit RewardTokenIssued(block.timestamp);
