@@ -16,6 +16,7 @@ contract P2PLending is Ownable  {
         string description;
         address borrower;
         uint fraudVoteCount;
+        uint creditId;
     }
 
     struct User {
@@ -25,8 +26,11 @@ contract P2PLending is Ownable  {
         Credit[] allCredits;
     }
 
+    uint nextCreditId;
+    
     mapping (address => mapping (Credit => bool)) creditFraudVote;
     mapping (Credit => Credits) public creditsMap;
+    mapping (uint => Credit) public creditAddressMap;
     mapping(address => User) public users;
     
     Credit[] public credits;
@@ -44,16 +48,26 @@ contract P2PLending is Ownable  {
 
         Credit credit = new Credit(requestedAmount, repaymentsCount, interest, creditDescription, msg.sender);
         Credits memory newCredits = creditsMap[credit];
-        newCredits = Credits(requestedAmount, repaymentsCount, interest, creditDescription, msg.sender, 0);
+        newCredits = Credits(requestedAmount, repaymentsCount, interest, creditDescription, msg.sender, 0, nextCreditId);
+        
+        creditAddressMap[nextCreditId] = credit;
+        nextCreditId++;
+        
         creditlog.push(newCredits);
 
         users[msg.sender].activeCredit = credit;
         credits.push(credit);
         users[msg.sender].allCredits.push(credit);
+        
+        creditAddressMap[nextCreditId];
 
         emit CreditCreated(credit, msg.sender, block.timestamp);
 
-        return credit;
+        return _credit;
+    }
+
+    function getCreditAddress(uint _creditId) public view returns (Credit){
+        return credits[_creditId];
     }
 
     function getCredits() public view returns (Credit[] memory) {
@@ -64,10 +78,8 @@ contract P2PLending is Ownable  {
         return users[msg.sender].allCredits;
     }
 
-    function setFraudStatus(address _borrower) public returns (bool) {
-        // Update user fraud status.
+    function setFraudStatus(address _borrower) public onlyOwner returns (bool) {
         users[_borrower].fraudStatus = true;
-
         return users[_borrower].fraudStatus;
     }
 

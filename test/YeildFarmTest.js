@@ -2,7 +2,7 @@ const YieldFarm = artifacts.require("YieldFarm");
 const TestToken = artifacts.require("TestToken");
 const Credit = artifacts.require("Credit");
 
-//Dev Mocks: these are mock's for testing and wouldnt be needed in production
+//these are mock's for testing and wouldnt be needed in production
 const mockPriceFeed = artifacts.require("MockV3Aggregator");
 const daiToken = artifacts.require("MockDAI");
 const wethToken = artifacts.require("MockWETH");
@@ -108,7 +108,26 @@ contract("YieldFarm", accounts => {
         const yieldFarm = await YieldFarm.deployed()
         
         await truffleAssert.passes(
-            await yieldFarm.applyForCredit(20, 4, 2, "Project Lone", {from: accounts[2]})
+            await yieldFarm.applyForCredit(20, 4, 2, "Project Lone", {from: accounts[2]}) 
+        )
+
+        //let creditId = 0
+        //let creditAddress = await yieldFarm.getCreditAddress(creditId, {from: accounts[1]})
+        //console.log(creditAddress)
+        
+    })
+
+    it("user can invest", async() => {
+        const yieldFarm = await YieldFarm.deployed()
+        
+        await yieldFarm.applyForCredit(20, 4, 2, "Project Lone", {from: accounts[4]})
+        let creditId = 0
+        let creditAddress = await yieldFarm.getCreditAddress(creditId, {from: accounts[1]})
+        let credit = await Credit.at(creditAddress)
+
+        
+        await truffleAssert.passes(
+            await credit.invest({value: 10, from: accounts[1]})
         )  
         
     })
